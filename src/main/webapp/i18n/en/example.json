@@ -1,0 +1,24 @@
+{
+  "jhipsterApp": {
+    "example": {
+      "home": {
+        "title": "Examples",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "Create a new Example",
+        "createOrEditLabel": "Create or edit a Example",
+        "notFound": "No Examples found"
+      },
+      "created": "A new Example is created with identifier {{ param }}",
+      "updated": "A Example is updated with identifier {{ param }}",
+      "deleted": "A Example is deleted with identifier {{ param }}",
+      "delete": {
+        "question": "Are you sure you want to delete Example {{ id }}?"
+      },
+      "detail": {
+        "title": "Example"
+      },
+      "id": "ID",
+      "name": "Name"
+    }
+  }
+}

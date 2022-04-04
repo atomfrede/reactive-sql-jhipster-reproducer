@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Stream;
+
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.r2dbc.convert.R2dbcConverter;
@@ -13,9 +14,14 @@ import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import org.springframework.data.r2dbc.core.StatementMapper;
 import org.springframework.data.r2dbc.mapping.OutboundRow;
 import org.springframework.data.r2dbc.query.UpdateMapper;
+import org.springframework.data.relational.core.dialect.Escaper;
 import org.springframework.data.relational.core.mapping.RelationalPersistentEntity;
 import org.springframework.data.relational.core.query.Criteria;
+import org.springframework.data.relational.core.sql.Column;
+import org.springframework.data.relational.core.sql.Comparison;
+import org.springframework.data.relational.core.sql.Condition;
 import org.springframework.data.relational.core.sql.Conditions;
+import org.springframework.data.relational.core.sql.Expression;
 import org.springframework.data.relational.core.sql.OrderByField;
 import org.springframework.data.relational.core.sql.Select;
 import org.springframework.data.relational.core.sql.SelectBuilder.SelectFromAndJoin;
@@ -24,6 +30,7 @@ import org.springframework.data.relational.core.sql.SelectBuilder.SelectOrdered;
 import org.springframework.data.relational.core.sql.SqlIdentifier;
 import org.springframework.data.relational.core.sql.Table;
 import org.springframework.data.relational.core.sql.render.SqlRenderer;
+import org.springframework.expression.spel.ast.StringLiteral;
 import org.springframework.r2dbc.core.Parameter;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
@@ -78,8 +85,24 @@ public class EntityManager {
     public String createSelect(SelectFromAndJoin selectFrom, Class<?> entityType, Pageable pageable, Criteria criteria) {
         if (pageable != null) {
             if (criteria != null) {
+
+                //Criteria.where("name").is("foobar';DROP TABLE example;--");
+                //name=foobar';DROP TABLE example;--
+                Comparison comparison = Comparison.create(Column.create(criteria.getColumn(), Table.create("example")),
+                    criteria.getComparator().getComparator(),
+                    Conditions.just(criteria.getValue().toString()));
+
+                Comparison equal = Conditions.isEqual(
+                    Column.create(criteria.getColumn(), Table.create("example")),
+                    Conditions.just(criteria.getValue().toString()));
+
+                System.out.println(equal);
+
                 return createSelectImpl(
-                    selectFrom.limitOffset(pageable.getPageSize(), pageable.getOffset()).where(Conditions.just(criteria.toString())),
+                    selectFrom.limitOffset(pageable.getPageSize(), pageable.getOffset())
+                        .where(
+
+                        Conditions.just(equal.toString())),
                     entityType,
                     pageable.getSort()
                 );
@@ -109,7 +132,9 @@ public class EntityManager {
     public String createSelect(SelectFromAndJoinCondition selectFrom, Class<?> entityType, Pageable pageable, Criteria criteria) {
         if (pageable != null) {
             if (criteria != null) {
+                System.out.println("test");
                 return createSelectImpl(
+
                     selectFrom.limitOffset(pageable.getPageSize(), pageable.getOffset()).where(Conditions.just(criteria.toString())),
                     entityType,
                     pageable.getSort()
